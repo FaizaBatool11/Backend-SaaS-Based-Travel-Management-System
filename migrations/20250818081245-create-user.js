@@ -1,0 +1,57 @@
+'use strict';
+import { DataTypes } from 'sequelize';
+
+/** @type {import('sequelize-cli').Migration} */
+export default {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable('Users', {
+      id: {
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+        type: DataTypes.INTEGER,
+      },
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
+      password: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      role: {
+        type: DataTypes.ENUM('super_admin', 'agency_admin', 'agency_user'),
+        allowNull: false,
+      },
+      agencyId: {
+        type: DataTypes.INTEGER,
+        allowNull: true, // super_admin ke liye null
+        // references: {
+        //   model: 'Agencies', // Agencies table
+        //   key: 'id',
+        // },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+      },
+      createdAt: {
+        allowNull: false,
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+      },
+      updatedAt: {
+        allowNull: false,
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+      },
+    });
+  },
+
+  async down(queryInterface, Sequelize) {
+    await queryInterface.dropTable('Users');
+  },
+};
