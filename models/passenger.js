@@ -29,7 +29,8 @@ import { Model, DataTypes } from "sequelize";
 export default (sequelize) => {
   class Passenger extends Model {
     static associate(models) {
-      // abhi koi relation nahi
+      // ✅ har Passenger ek Agency ka hoga
+      Passenger.belongsTo(models.Agency, { foreignKey: "agencyId" });
     }
   }
 
@@ -48,6 +49,15 @@ export default (sequelize) => {
         allowNull: false,
         unique: true,
       },
+      agencyId: {   // ✅ foreign key for Agency
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: "Agencies", // Agencies table
+          key: "id",
+        },
+        onDelete: "CASCADE",
+      },
     },
     {
       sequelize,
@@ -57,3 +67,5 @@ export default (sequelize) => {
 
   return Passenger;
 };
+
+

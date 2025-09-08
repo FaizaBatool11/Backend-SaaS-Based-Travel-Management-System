@@ -15,19 +15,18 @@ export default {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      contact_info: {
+      email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
+      phone: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      admin_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true, // ✅ admin later assign ho sakta hai
-        // references: {
-        //   model: 'Users', // ✅ User table ka sahi naam (capital U)
-        //   key: 'id',
-        // },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL', // ✅ agar admin delete ho jaye to agency survive kare
+      address: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
       createdAt: {
         allowNull: false,

@@ -32,7 +32,6 @@
 //     await queryInterface.dropTable('Passengers');
 //   }
 // };
-
 import { DataTypes } from "sequelize";
 
 /** @type {import('sequelize-cli').Migration} */
@@ -57,6 +56,16 @@ export default {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
+      },
+      // ✅ ab foreign key agencyId hoga
+      agencyId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: "Agencies", // Agencies table
+          key: "id",
+        },
+        onDelete: "CASCADE", // agar agency delete ho jaye to passengers bhi delete ho
       },
       createdAt: {
         allowNull: false,

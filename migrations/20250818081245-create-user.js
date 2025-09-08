@@ -25,18 +25,8 @@ export default {
         allowNull: false,
       },
       role: {
-        type: DataTypes.ENUM('super_admin', 'agency_admin', 'agency_user'),
+        type: DataTypes.ENUM('owner'),
         allowNull: false,
-      },
-      agencyId: {
-        type: DataTypes.INTEGER,
-        allowNull: true, // super_admin ke liye null
-        // references: {
-        //   model: 'Agencies', // Agencies table
-        //   key: 'id',
-        // },
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE',
       },
       createdAt: {
         allowNull: false,
