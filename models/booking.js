@@ -1,27 +1,61 @@
-// 'use strict';
-// const {
-//   Model
-// } = require('sequelize');
-// module.exports = (sequelize, DataTypes) => {
+// import { Model, DataTypes } from "sequelize";
+
+// export default (sequelize) => {
 //   class Booking extends Model {
-//     /**
-//      * Helper method for defining associations.
-//      * This method is not a part of Sequelize lifecycle.
-//      * The `models/index` file will call this method automatically.
-//      */
 //     static associate(models) {
-//       // define association here
+//       // 🔗 Booking → Trip (Many-to-One)
+//       Booking.belongsTo(models.Trip, {
+//         foreignKey: "tripId",
+//         as: "trip",
+//         onUpdate: "CASCADE",
+//         onDelete: "CASCADE",
+//       });
+
+//       // 🔗 Booking → Passenger (Many-to-One)
+//       Booking.belongsTo(models.Passenger, {
+//         foreignKey: "passengerId",
+//         as: "passenger",
+//         onUpdate: "CASCADE",
+//         onDelete: "CASCADE",
+//       });
+
+//       // 🔗 Booking → User (createdBy) (Many-to-One)
+//       Booking.belongsTo(models.User, {
+//         foreignKey: "createdBy",
+//         as: "creator",
+//         onUpdate: "CASCADE",
+//         onDelete: "SET NULL",
+//       });
 //     }
 //   }
-//   Booking.init({
-//     tripId: DataTypes.INTEGER,
-//     passengerId: DataTypes.INTEGER,
-//     status: DataTypes.STRING,
-//     createdBy: DataTypes.INTEGER
-//   }, {
-//     sequelize,
-//     modelName: 'Booking',
-//   });
+
+//   Booking.init(
+//     {
+//       tripId: {
+//         type: DataTypes.INTEGER,
+//         allowNull: false,
+//       },
+//       passengerId: {
+//         type: DataTypes.INTEGER,
+//         allowNull: false,
+//       },
+//       status: {
+//         type: DataTypes.ENUM("pending", "confirmed", "cancelled"),
+//         allowNull: false,
+//         defaultValue: "pending",
+//       },
+//       createdBy: {
+//         type: DataTypes.INTEGER,
+//         allowNull: true,
+//       },
+//     },
+//     {
+//       sequelize,
+//       modelName: "Booking",
+//       tableName: "bookings", // match your migration (lowercase)
+//     }
+//   );
+
 //   return Booking;
 // };
 
@@ -53,6 +87,14 @@ export default (sequelize) => {
         onUpdate: "CASCADE",
         onDelete: "SET NULL",
       });
+
+      // 🔗 Booking → Agency (Many-to-One)
+      Booking.belongsTo(models.Agency, {
+        foreignKey: "agencyId",
+        as: "agency",
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
+      });
     }
   }
 
@@ -65,6 +107,15 @@ export default (sequelize) => {
       passengerId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+      },
+      agencyId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      seatsAvailable: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 1,
       },
       status: {
         type: DataTypes.ENUM("pending", "confirmed", "cancelled"),

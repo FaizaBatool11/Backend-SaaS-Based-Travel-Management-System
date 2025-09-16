@@ -67,6 +67,21 @@ export default {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
+      agencyId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'agencies', // lowercase table name
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
+      },
+      seatsAvailable: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 1
+      },
       status: {
         type: Sequelize.ENUM('pending', 'confirmed', 'cancelled'),
         allowNull: false,
@@ -98,3 +113,4 @@ export default {
     await queryInterface.dropTable('bookings');
   }
 };
+

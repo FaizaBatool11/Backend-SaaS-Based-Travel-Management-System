@@ -160,7 +160,7 @@ export default (sequelize) => {
       },
 
       role: {
-        type: DataTypes.ENUM("super_admin", "agency_admin", "booking_agent"),
+        type: DataTypes.ENUM("owner" , "manager", "booking-agent"),
         allowNull: false,
       },
     },
