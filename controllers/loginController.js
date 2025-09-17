@@ -28,9 +28,9 @@ export const login = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (user.role !== "owner") {
-      return res.status(403).json({ message: "Only owners can login here" });
-    }
+    // if (user.role !== "owner") {
+    //   return res.status(403).json({ message: "Only owners can login here" });
+    // }
 
     // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
@@ -52,12 +52,25 @@ export const login = async (req, res) => {
     );
 
     // Decide dashboard for owner
+    // let dashboard = "";
+    // if (user.agencies.length > 0) {
+    //   dashboard = `/Admin/${user.agencies[0].id}`; // first agency
+    // } else {
+    //   dashboard = "/Admin/AddAgencyPage"; // first-time owner
+    // }
     let dashboard = "";
-    if (user.agencies.length > 0) {
-      dashboard = `/Admin/${user.agencies[0].id}`; // first agency
-    } else {
-      dashboard = "/Admin/AddAgencyPage"; // first-time owner
-    }
+
+if (user.role === "owner") {
+  // Owners → Admin dashboard
+  dashboard =
+    user.agencies.length > 0
+      ? `/Admin/${user.agencies[0].id}`
+      : "/Admin/AddAgencyPage";
+} else if (user.role === "manager") {
+  dashboard = "/Admin";
+} else if (user.role === "booking-agent") {
+  dashboard = "/Admin";
+}
 
     res.status(200).json({
       message: "Login successful",

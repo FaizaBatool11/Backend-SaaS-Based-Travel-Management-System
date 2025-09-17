@@ -1,5 +1,5 @@
-import User from "../models/user.js";
-import Agency from "../models/agency.js";
+import db from "../models/index.js";
+const { User, Agency, UserAgency } = db;
 import bcrypt from "bcryptjs";
 
 const ALLOWED_ROLES = ["manager", "booking-agent"];
@@ -31,6 +31,7 @@ export const addUser = async (req, res) => {
       include: [
         {
           model: User,
+          as: "users",
           where: { id: req.user.id },
           through: { attributes: [] },
         },
@@ -91,6 +92,7 @@ export const getUsers = async (req, res) => {
       include: [
         {
           model: User,
+          as: "users",
           attributes: ["id", "name", "email", "role", "createdAt"],
           through: { attributes: [] },
         },
@@ -101,7 +103,7 @@ export const getUsers = async (req, res) => {
       return res.status(404).json({ message: "Agency not found" });
     }
 
-    return res.status(200).json({ users: agency.Users });
+    return res.status(200).json({ users: agency.users.filter(u => u.role !== "owner") });
   } catch (err) {
     console.error("GetUsers error:", err);
     return res.status(500).json({ message: "Server error" });
