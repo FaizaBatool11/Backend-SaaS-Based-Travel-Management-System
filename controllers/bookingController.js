@@ -124,7 +124,7 @@ export const createBooking = async (req, res) => {
   const booking = await Booking.create({
   tripId,
   passengerId,
-  seatsAvailable: req.body.seatsAvailable || 1, // 👈 save seats
+  seats: req.body.seats, // 👈 save seats
   status: "pending",
   createdBy: req.user.id,
   agencyId: req.user.agencyId, 
@@ -145,7 +145,7 @@ export const getAllBookings = async (req, res) => {
         { model: Trip, as: "trip" },
         { model: Passenger, as: "passenger" },
       ],
-      order: [["id", "DESC"]],
+      order: [["id", "ASC"]],
     });
 
     if (!bookings || bookings.length === 0) {
@@ -185,26 +185,38 @@ export const cancelBooking = async (req, res) => {
   }
 };
 
-// ✅ Update booking (status or seats)
 export const updateBooking = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, seatsAvailable } = req.body;
+    const { status, seats } = req.body;
 
     const booking = await Booking.findOne({
       where: { id, agencyId: req.user.agencyId },
+      include: [
+        { model: Trip, as: "trip" },
+        { model: Passenger, as: "passenger" },
+      ],
     });
 
     if (!booking) {
       return res.status(404).json({ message: "Booking not found in your agency" });
     }
 
-    // Update fields if provided
     if (status) booking.status = status;
-    if (seatsAvailable !== undefined) booking.seatsAvailable = seatsAvailable;
+    if (seats !== undefined) booking.seats = seats;
 
     await booking.save();
-    res.json(booking);
+
+    // 👇 Always return with passenger + trip so frontend me N/A na aaye
+    const updatedBooking = await Booking.findOne({
+      where: { id: booking.id },
+      include: [
+        { model: Trip, as: "trip" },
+        { model: Passenger, as: "passenger" },
+      ],
+    });
+
+    res.json({ booking: updatedBooking });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

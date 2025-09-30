@@ -1,136 +1,201 @@
+// import db from "../models/index.js";
+
+// const { Agency, User, Role, UserRoles, RolePermissions, Permission } = db;
+
+// export const createAgency = async (req, res) => {
+//   try {
+//     const { name, email, phone, address } = req.body;
+
+//     // ✅ Logged-in user (from middleware JWT verify)
+//     const userId = req.user?.id;
+//     if (!userId) {
+//       return res.status(401).json({ message: "Unauthorized - No user in token" });
+//     }
+
+//     const user = await User.findByPk(userId, {
+//       include: [
+//         {
+//           model: Role,
+//           as: "roles",
+//           through: { attributes: [] }, // pivot table UserRoles
+//         },
+//       ],
+//     });
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     // ✅ Check if user has 'owner' role
+//     const isOwner = user.roles.some((r) => r.name === "owner");
+//     if (!isOwner) {
+//       return res.status(403).json({ message: "Only owner can create agencies" });
+//     }
+
+//     // ✅ Create agency
+//     const newAgency = await Agency.create({
+//       name,
+//       email,
+//       phone,
+//       address,
+//     });
+
+//     // ✅ Link the admin user via pivot table as "owner" in this agency
+//     await newAgency.addUsers(user, { through: { role: "owner" } });
+
+//     // ✅ Return full info for frontend
+//     return res.status(201).json({
+//       message: "Agency created successfully",
+//       agencyId: newAgency.id, // frontend needs this
+//       agency: {
+//         id: newAgency.id,
+//         name: newAgency.name,
+//         email: newAgency.email,
+//         phone: newAgency.phone,
+//         address: newAgency.address,
+//       },
+//       user: {
+//         id: user.id,
+//         name: user.name,
+//         email: user.email,
+//         roles: user.roles.map((r) => r.name), // dynamic roles
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Error creating agency:", error);
+//     if (error.errors) {
+//       error.errors.forEach((e) => console.error(e.message));
+//     }
+//     return res.status(500).json({ message: "Internal server error" });
+//   }
+// };
+
+// export const getAllAgencies = async (req, res) => {
+//   try {
+//     const userId = req.user?.id;
+//     if (!userId) {
+//       return res.status(401).json({ message: "Unauthorized" });
+//     }
+
+//     const user = await User.findByPk(userId, {
+//       include: [
+//         {
+//           model: Agency,
+//           as: "agencies",
+//           attributes: ["id", "name", "email", "phone", "address"],
+//           through: { attributes: ["role"] }, // role in that agency
+//         },
+//       ],
+//     });
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     // Return agencies with user role in each agency
+//     const agencies = user.agencies.map((agency) => ({
+//       id: agency.id,
+//       name: agency.name,
+//       email: agency.email,
+//       phone: agency.phone,
+//       address: agency.address,
+//       userRole: agency.UserAgencies.role, // role in this agency
+//     }));
+
+//     res.json(agencies);
+//   } catch (error) {
+//     console.error("Error fetching agencies:", error);
+//     res.status(500).json({ message: "Error fetching agencies" });
+//   }
+// };
+
 import db from "../models/index.js";
 
-const { Agency, User } = db;
+const { Agency, User, Role, UserAgency } = db;
 
+// Create a new agency
 export const createAgency = async (req, res) => {
   try {
-    const { name, email, phone, address } = req.body;
+    const { name, phone, address } = req.body;
 
-    // ✅ Logged-in user (from middleware JWT verify)
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ message: "Unauthorized - No user in token" });
-    }
+    const userId = req.user?.id; // from JWT
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    const user = await User.findByPk(userId, {
-      include: [{ model: Agency, as: "agencies" }]
-    });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    // Fetch user
+    const user = await User.findByPk(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    // ✅ Only agency_admin can create an agency
-    if (user.role !== "owner") {
-      return res.status(403).json({ message: "Only owner can create agencies" });
-    }
+    // Check if user is "owner" (only owner can create agency)
+    const ownerRole = await Role.findOne({ where: { name: "owner" } });
+    if (!ownerRole) return res.status(500).json({ message: "Owner role not found" });
 
-    // ✅ Check if this admin already has an agency via pivot table
-    // const existingAgencies = user.agencies;
-    // if (existingAgencies.length > 0) {
-    //   return res.status(400).json({ message: "You have already created an agency" });
-    // }
-
-    // ✅ Check if another agency already exists with this email
-    // const existingAgency = await Agency.findOne({ where: { email } });
-    // if (existingAgency) {
-    //   return res.status(400).json({ message: "Agency already exists with this email" });
-    // }
-
-    // ✅ Create agency
-    const newAgency = await Agency.create({
-      name,
-      email,
-      phone,
-      address,
+    // Optional: Check if user already linked as owner to any agency
+    const existingLink = await UserAgency.findOne({
+      where: { userId, roleId: ownerRole.id },
     });
 
-    // ✅ Link the admin user via pivot table as "owner"
-    await newAgency.addUsers(user, { through: { role: "owner" } });
+    // Create agency
+    const newAgency = await Agency.create({ name, phone, address });
 
-    return res.status(201).json({
+    // Link owner to agency via UserAgency
+    await UserAgency.create({
+      userId: user.id,
+      agencyId: newAgency.id,
+      roleId: ownerRole.id,
+    });
+
+    res.status(201).json({
       message: "Agency created successfully",
       agency: {
         id: newAgency.id,
         name: newAgency.name,
-        email: newAgency.email,
         phone: newAgency.phone,
         address: newAgency.address,
       },
       user: {
         id: user.id,
         name: user.name,
-        email: user.email,
-        role: user.role,
+        role: ownerRole.name,
       },
     });
-
   } catch (error) {
     console.error("Error creating agency:", error);
-    if (error.errors) {
-      error.errors.forEach(e => console.error(e.message));
-    }
     return res.status(500).json({ message: "Internal server error" });
   }
 };
 
-// ✅ API to link booking agent with an agency
-// export const assignAgentToAgency = async (req, res) => {
-//   try {
-//     const { userId, agencyId } = req.body;
-
-//     // user check
-//     const user = await User.findByPk(userId);
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-//     if (user.role !== "booking_agent") {
-//       return res.status(400).json({ message: "Only booking agents can be assigned to an agency" });
-//     }
-
-//     // agency check
-//     const agency = await Agency.findByPk(agencyId);
-//     if (!agency) {
-//       return res.status(404).json({ message: "Agency not found" });
-//     }
-
-//     // pivot table entry
-//     await agency.addUsers(user, { through: { role: "booking_agent" } });
-
-//     return res.status(200).json({
-//       message: "Booking agent linked with agency successfully",
-//       user: { id: user.id, name: user.name, email: user.email },
-//       agency: { id: agency.id, name: agency.name },
-//     });
-
-//   } catch (error) {
-//     console.error("Error assigning agent to agency:", error);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// };
-
+// Get all agencies for logged-in user
 export const getAllAgencies = async (req, res) => {
   try {
     const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    const user = await User.findByPk(userId, {
+    // Fetch UserAgency links
+    const userAgencies = await UserAgency.findAll({
+      where: { userId },
       include: [
         {
           model: Agency,
-          as: "agencies",
-          attributes: ["id", "name"],
-          through: { attributes: [] } // pivot table ka data skip karna
-        }
-      ]
+          as: "agency", // ✅ must match alias in model
+          attributes: ["id", "name", "phone", "address"],
+        },
+        {
+          model: Role, 
+          as: "role",
+          attributes: ["name"],
+        },
+      ],
     });
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    const agencies = userAgencies.map((ua) => ({
+      id: ua.agency.id,
+      name: ua.agency.name,
+      phone: ua.agency.phone,
+      address: ua.agency.address,
+      userRole: ua.role.name, // Role is accessible directly
+    }));
 
-    res.json(user.agencies); // 👈 sirf is user ki agencies bhejo
+    res.json(agencies);
   } catch (error) {
     console.error("Error fetching agencies:", error);
     res.status(500).json({ message: "Error fetching agencies" });

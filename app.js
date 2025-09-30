@@ -8,7 +8,11 @@ import tripRoutes from "./routes/tripRoutes.js";
 import passengerRoutes from "./routes/passengerRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import statsRoutes from "./routes/statsRoutes.js";
+import seatutilizationRoutes from "./routes/seatutilizationRoutes.js";
 import adduserRoutes from "./routes/adduserRoutes.js";
+import roleRoutes from "./routes/roleRoutes.js";
+import permissionRoutes from "./routes/permissionRoutes.js";
+// import useragencyRoutes from "./routes/useragencyRoutes.js";
 import db from "./models/index.js";
 
 dotenv.config();
@@ -40,7 +44,11 @@ app.use("/api/trips", tripRoutes);
 app.use("/api/passengers", passengerRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/dashboard", statsRoutes);
+app.use("/api/seatutilization",seatutilizationRoutes);
 app.use("/api/users", adduserRoutes);
+app.use("/api/roles", roleRoutes);
+app.use("/api/permissions", permissionRoutes);
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));

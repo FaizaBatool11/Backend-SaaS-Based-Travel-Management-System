@@ -1,8 +1,128 @@
+// import bcrypt from "bcrypt";
+// import jwt from "jsonwebtoken";
+// import db from "../models/index.js";
+
+// const { User, Agency, UserAgency, Role } = db;
+
+// export const login = async (req, res) => {
+//   const { email, password } = req.body;
+
+//   if (!email || !password) {
+//     return res.status(400).json({ message: "Email and password are required" });
+//   }
+
+//   try {
+//     // Find user by email and include agencies and roles via UserAgency
+//   const user = await User.findOne({
+//   where: { email },
+//   include: [
+//     {
+//       model: Agency,
+//       as: "agencies",
+//       through: { attributes: ["roleId"] } // ✅ sirf yahan tak rakho
+//     },
+//   ],
+// });
+
+//     if (!user) return res.status(404).json({ message: "User not found" });
+
+//     // Compare password
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
+
+//     // Decide default agency for dashboard
+//     let dashboard = "";
+//     let defaultAgency = null;
+//     let userRole = null;
+
+//     if (user.agencies.length > 0) {
+//       defaultAgency = user.agencies[0];
+//       // Fetch role name from UserAgency
+//       const userAgency = await UserAgency.findOne({
+//         where: { userId: user.id, agencyId: defaultAgency.id },
+//         include: [{ model: Role, as: "roles" }],
+//       });
+//       userRole = userAgency.Role.name;
+
+//       // Set dashboard based on role
+//       if (userRole === "owner") {
+//         dashboard = `/Admin/${defaultAgency.id}`;
+//       } else {
+//         dashboard = "/Admin";
+//       }
+//     } else {
+//       // First-time owner (no agency yet)
+//       dashboard = "/Admin/AddAgencyPage";
+//       userRole = "owner";
+//     }
+
+//     // Generate JWT token
+//     const token = jwt.sign(
+//       {
+//         id: user.id,
+//         role: userAgency.roles.name,
+//         agencyId: defaultAgency ? defaultAgency.id : null,
+//       },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "1d" }
+//     );
+
+//     res.status(200).json({
+//       message: "Login successful",
+//       user: {
+//         id: user.id,
+//         name: user.name,
+//         email: user.email,
+//         role: userRole,
+//         dashboard,
+//         agencies: user.agencies.map((a) => ({ id: a.id, name: a.name })),
+//       },
+//       token,
+//     });
+//   } catch (error) {
+//     console.error("Login error:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// };
+
+// export const switchAgency = async (req, res) => {
+//   try {
+//     const { agencyId } = req.body;
+
+//     if (!agencyId) return res.status(400).json({ message: "Agency ID required" });
+
+//     // Check if user belongs to this agency
+//     const userAgency = await UserAgency.findOne({
+//       where: { userId: req.user.id, agencyId },
+//       include: [{ model: Role, as: "roles" }],
+//     });
+
+//     if (!userAgency)
+//       return res.status(403).json({ message: "You don't belong to this agency" });
+
+//     // Generate new token with selected agency and role
+//     const token = jwt.sign(
+//       {
+//         id: req.user.id,
+//         agencyId,
+//         role: userAgency.roles.name, // use alias
+//       },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "1d" }
+//     );
+
+//     res.json({ token, message: "Switched agency successfully" });
+//   } catch (err) {
+//     console.error("Switch agency error:", err);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// };
+
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import db from "../models/index.js";
 
-const { User, Agency } = db;
+const { User, Agency, UserAgency, Role } = db;
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
@@ -12,65 +132,62 @@ export const login = async (req, res) => {
   }
 
   try {
-    // Find user by email and include agencies
+    // Find user by email and include agencies via UserAgency
     const user = await User.findOne({
       where: { email },
       include: [
         {
           model: Agency,
           as: "agencies",
-          through: { attributes: [] },
+          through: { attributes: ["roleId"] } // keep roleId in junction
         },
       ],
     });
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // if (user.role !== "owner") {
-    //   return res.status(403).json({ message: "Only owners can login here" });
-    // }
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
+    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
+
+    // Decide default agency for dashboard
+    let dashboard = "";
+    let defaultAgency = null;
+    let userRole = null;
+
+    if (user.agencies.length > 0) {
+      defaultAgency = user.agencies[0];
+
+      // Fetch role name from UserAgency using correct alias
+      const userAgency = await UserAgency.findOne({
+        where: { userId: user.id, agencyId: defaultAgency.id },
+        include: [{ model: Role, as: "role" }], // ✅ use alias
+      });
+
+      if (!userAgency || !userAgency.role) {
+        return res.status(500).json({ message: "User role not found" });
+      }
+
+      userRole = userAgency.role.name; // ✅ correct alias
+
+      // Set dashboard based on role
+      dashboard = userRole === "owner" ? `/Admin/${defaultAgency.id}` : "/Admin";
+    } else {
+      // First-time owner (no agency yet)
+      dashboard = "/Admin/AddAgencyPage";
+      userRole = "owner";
     }
 
     // Generate JWT token
     const token = jwt.sign(
       {
         id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        // agencyId: user.agencies.length > 0 ? user.agencies[0].id : null, // 👈 add this
+        role: userRole,
+        agencyId: defaultAgency ? defaultAgency.id : null,
       },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
-
-    // Decide dashboard for owner
-    // let dashboard = "";
-    // if (user.agencies.length > 0) {
-    //   dashboard = `/Admin/${user.agencies[0].id}`; // first agency
-    // } else {
-    //   dashboard = "/Admin/AddAgencyPage"; // first-time owner
-    // }
-    let dashboard = "";
-
-if (user.role === "owner") {
-  // Owners → Admin dashboard
-  dashboard =
-    user.agencies.length > 0
-      ? `/Admin/${user.agencies[0].id}`
-      : "/Admin/AddAgencyPage";
-} else if (user.role === "manager") {
-  dashboard = "/Admin";
-} else if (user.role === "booking-agent") {
-  dashboard = "/Admin";
-}
 
     res.status(200).json({
       message: "Login successful",
@@ -78,7 +195,7 @@ if (user.role === "owner") {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        role: userRole,
         dashboard,
         agencies: user.agencies.map((a) => ({ id: a.id, name: a.name })),
       },
@@ -90,29 +207,77 @@ if (user.role === "owner") {
   }
 };
 
+// export const switchAgency = async (req, res) => {
+//   try {
+//     const { agencyId } = req.body;
+
+//     if (!agencyId) return res.status(400).json({ message: "Agency ID required" });
+
+//     // Check if user belongs to this agency
+//     const userAgency = await UserAgency.findOne({
+//       where: { userId: req.user.id, agencyId },
+//       include: [{ model: Role, as: "role" }], // ✅ correct alias
+//     });
+
+//     if (!userAgency || !userAgency.roles) {
+//       return res.status(403).json({ message: "You don't belong to this agency" });
+//     }
+
+//     // Generate new token with selected agency and role
+//     const token = jwt.sign(
+//       {
+//         id: req.user.id,
+//         agencyId,
+//         role: userAgency.role.name, // ✅ correct alias
+//       },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "1d" }
+//     );
+
+//     res.json({ token, message: "Switched agency successfully" });
+//   } catch (err) {
+//     console.error("Switch agency error:", err);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// };
 
 export const switchAgency = async (req, res) => {
-  const { agencyId } = req.body;
+  try {
+    const { agencyId } = req.body;
 
-  // Check ke user is agency ka owner hai ya nahi
-  const userAgency = await db.UserAgency.findOne({
-    where: { userId: req.user.id, agencyId },
-  });
+    if (!agencyId) {
+      return res.status(400).json({ message: "Agency ID required" });
+    }
 
-  if (!userAgency) {
-    return res.status(403).json({ message: "You don't belong to this agency" });
+    // Check if user belongs to this agency
+    const userAgency = await UserAgency.findOne({
+      where: { userId: req.user.id, agencyId },
+      include: [{ model: Role, as: "role" }], // ✅ correct alias
+    });
+
+    if (!userAgency || !userAgency.role) {
+      return res.status(403).json({ message: "You don't belong to this agency" });
+    }
+
+    // Generate new token with selected agency and role
+    const token = jwt.sign(
+      {
+        id: req.user.id,
+        agencyId,
+        role: userAgency.role.name, // ✅ correct alias
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    return res.json({
+      token,
+      agencyId,
+      role: userAgency.role.name,
+      message: "Switched agency successfully",
+    });
+  } catch (err) {
+    console.error("Switch agency error:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
-
-  // ✅ Naya token jisme agencyId bhi inject ho
-  const token = jwt.sign(
-    {
-      id: req.user.id,
-      role: req.user.role,
-      agencyId, // 👈 ab ye har request ke sath jayega
-    },
-    process.env.JWT_SECRET,
-    { expiresIn: "1d" }
-  );
-
-  res.json({ token });
 };

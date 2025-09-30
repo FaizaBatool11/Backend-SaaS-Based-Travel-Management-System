@@ -24,10 +24,6 @@ export default {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      role: {
-        type: DataTypes.ENUM('owner'),
-        allowNull: false,
-      },
       createdAt: {
         allowNull: false,
         type: DataTypes.DATE,

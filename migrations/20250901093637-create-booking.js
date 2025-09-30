@@ -77,7 +77,7 @@ export default {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      seatsAvailable: {
+      seats: {
         type: Sequelize.INTEGER,
         allowNull: false,
         defaultValue: 1

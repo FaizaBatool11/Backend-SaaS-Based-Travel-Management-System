@@ -1,38 +1,3 @@
-// 'use strict';
-// /** @type {import('sequelize-cli').Migration} */
-// module.exports = {
-//   async up(queryInterface, Sequelize) {
-//     await queryInterface.createTable('UserAgencies', {
-//       id: {
-//         allowNull: false,
-//         autoIncrement: true,
-//         primaryKey: true,
-//         type: Sequelize.INTEGER
-//       },
-//       userId: {
-//         type: Sequelize.INTEGER
-//       },
-//       agencyId: {
-//         type: Sequelize.INTEGER
-//       },
-//       role: {
-//         type: Sequelize.STRING
-//       },
-//       createdAt: {
-//         allowNull: false,
-//         type: Sequelize.DATE
-//       },
-//       updatedAt: {
-//         allowNull: false,
-//         type: Sequelize.DATE
-//       }
-//     });
-//   },
-//   async down(queryInterface, Sequelize) {
-//     await queryInterface.dropTable('UserAgencies');
-//   }
-// };
-
 'use strict';
 import { DataTypes } from 'sequelize';
 
@@ -63,10 +28,12 @@ export default {
         onUpdate: 'CASCADE',
       },
 
-      role: {
-        type: DataTypes.STRING,
+      roleId: {
+        type: DataTypes.INTEGER,
         allowNull: false,
-        defaultValue: 'owner',
+        references: { model: 'roles', key: 'id' },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
       },
 
       createdAt: {

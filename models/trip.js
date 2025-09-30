@@ -1,36 +1,3 @@
-// import { Model, DataTypes } from "sequelize";
-
-// export default (sequelize) => {
-//   class Trip extends Model {
-//     static associate(models) {
-//       // Trip belongs to one Agency
-//       Trip.belongsTo(models.Agency, { foreignKey: "agencyId", as: "agency" });
-
-//       // Agency has many Trips (this will be defined in Agency model too)
-//       // models.Agency.hasMany(models.Trip, { foreignKey: "agencyId", as: "trips" });
-//     }
-//   }
-
-//   Trip.init(
-//     {
-//       from: DataTypes.STRING,
-//       to: DataTypes.STRING,
-//       depart: DataTypes.DATE,
-//       mode: DataTypes.ENUM("Bus", "Train"),
-//       classType: DataTypes.ENUM("Economy", "Business"),
-//       price: DataTypes.INTEGER,
-//       seatsAvailable: DataTypes.INTEGER,
-//       agencyId: DataTypes.INTEGER,
-//     },
-//     {
-//       sequelize,
-//       modelName: "Trip",
-//     }
-//   );
-
-//   return Trip;
-// };
-
 import { Model, DataTypes } from "sequelize";
 
 export default (sequelize) => {
@@ -41,6 +8,8 @@ export default (sequelize) => {
         foreignKey: "agencyId",
         as: "agency",
       });
+
+      Trip.hasMany(models.Booking, { foreignKey: "tripId" });
 
       // (Optional) 🔗 Trip → User (createdBy relation, agar migration me add kiya ho)
       // Trip.belongsTo(models.User, {

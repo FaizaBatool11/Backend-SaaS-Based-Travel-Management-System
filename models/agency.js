@@ -1,63 +1,3 @@
-// import { Model, DataTypes } from 'sequelize';
-
-// export default (sequelize) => {
-//   class Agency extends Model {
-//     static associate(models) {
-//       Agency.belongsTo(models.User, {
-//         foreignKey: 'admin_id',
-//         as: 'admin',
-//         onDelete: 'SET NULL',
-//       });
-
-//       Agency.hasMany(models.User, {
-//         foreignKey: 'agencyId',
-//         as: 'users',
-//         onDelete: 'CASCADE',
-//       });
-
-//       Agency.hasMany(models.Trip, {
-//         foreignKey: "agencyId",
-//         as: "trips",
-//         onDelete: "CASCADE",
-//   });
-//     }
-//   }
-
-//   Agency.init(
-//     {
-//       name: {
-//         type: DataTypes.STRING,
-//         allowNull: false,
-//       },
-//       email: {
-//         type: DataTypes.STRING,
-//         allowNull: false,
-//         unique: true,
-//       },
-//       phone: {
-//         type: DataTypes.STRING,
-//         allowNull: false,
-//       },
-//       address: {
-//         type: DataTypes.STRING,
-//         allowNull: false,
-//       },
-//       admin_id: {
-//         type: DataTypes.INTEGER,
-//         allowNull: true,
-//       },
-//     },
-//     {
-//       sequelize,
-//       modelName: 'Agency',
-//       tableName: 'agencies',
-//       timestamps: true,
-//     }
-//   );
-
-//   return Agency;
-// };
-
 import { Model, DataTypes } from "sequelize";
 
 export default (sequelize) => {
@@ -77,6 +17,8 @@ export default (sequelize) => {
         as: "trips",
         onDelete: "CASCADE",
       });
+
+      Agency.hasMany(models.UserAgency, { foreignKey: "agencyId" });
     }
   }
 
