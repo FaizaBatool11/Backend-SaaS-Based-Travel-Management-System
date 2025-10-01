@@ -50,6 +50,13 @@ export default {
         type: Sequelize.STRING,
         allowNull: true,
       },
+      agencyId: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: { model: 'Agencies', key: 'id' }, // FK to Agencies
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

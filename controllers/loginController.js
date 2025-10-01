@@ -171,7 +171,7 @@ export const login = async (req, res) => {
       userRole = userAgency.role.name; // ✅ correct alias
 
       // Set dashboard based on role
-      dashboard = userRole === "owner" ? `/Admin/${defaultAgency.id}` : "/Admin";
+      // dashboard = userRole === "owner" ? `/Admin/${defaultAgency.id}` : "/Admin";
     } else {
       // First-time owner (no agency yet)
       dashboard = "/Admin/AddAgencyPage";
@@ -196,7 +196,6 @@ export const login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: userRole,
-        dashboard,
         agencies: user.agencies.map((a) => ({ id: a.id, name: a.name })),
       },
       token,
@@ -206,40 +205,6 @@ export const login = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
-// export const switchAgency = async (req, res) => {
-//   try {
-//     const { agencyId } = req.body;
-
-//     if (!agencyId) return res.status(400).json({ message: "Agency ID required" });
-
-//     // Check if user belongs to this agency
-//     const userAgency = await UserAgency.findOne({
-//       where: { userId: req.user.id, agencyId },
-//       include: [{ model: Role, as: "role" }], // ✅ correct alias
-//     });
-
-//     if (!userAgency || !userAgency.roles) {
-//       return res.status(403).json({ message: "You don't belong to this agency" });
-//     }
-
-//     // Generate new token with selected agency and role
-//     const token = jwt.sign(
-//       {
-//         id: req.user.id,
-//         agencyId,
-//         role: userAgency.role.name, // ✅ correct alias
-//       },
-//       process.env.JWT_SECRET,
-//       { expiresIn: "1d" }
-//     );
-
-//     res.json({ token, message: "Switched agency successfully" });
-//   } catch (err) {
-//     console.error("Switch agency error:", err);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// };
 
 export const switchAgency = async (req, res) => {
   try {
