@@ -96,14 +96,14 @@ export const checkPermission = (requiredPermission) => {
   return async (req, res, next) => {
     try {
       const userId = req.user.id;
-
+      const agencyId = req.user.agencyId;
       // Skip agency check for create agency route
       if (req.path === "/api/agencies" && req.method === "POST") {
         return next();
       }
 
       const userAgency = await UserAgency.findOne({
-        where: { userId },
+        where: { userId, agencyId },
         include: [
           {
             model: Role,
