@@ -101,6 +101,7 @@
 // };
 
 // controllers/roleController.js
+
 import db from "../models/index.js";
 const { Role, Permission } = db;
 

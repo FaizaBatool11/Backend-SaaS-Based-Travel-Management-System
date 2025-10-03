@@ -15,7 +15,6 @@ import { checkPermission } from "../middleware/checkPermission.js";
 
 const router = express.Router();
 
-// ✅ Sirf woh user access kare jiske paas "dashboard:view" permission ho
 router.get(
   "/stats/:agencyId",
   authMiddleware,

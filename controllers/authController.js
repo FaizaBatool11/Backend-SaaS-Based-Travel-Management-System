@@ -1,6 +1,5 @@
-// controllers/me.js
 import db from "../models/index.js";
-const {User, Role, Permission, UserAgency} = db;
+const {User, Role, Permission, UserAgency, Agency} = db;
 export const loginUser = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
