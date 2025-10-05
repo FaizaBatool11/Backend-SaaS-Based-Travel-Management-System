@@ -18,7 +18,12 @@ const router = express.Router();
 router.get(
   "/stats/:agencyId",
   authMiddleware,
-  checkPermission("stats:view"),
+  checkPermission([
+  "stats:all:view",
+  "stats:bookings:view",
+  "stats:trips:view",
+  "stats:passengers:view",
+]),
   getDashboardStats
 );
 
