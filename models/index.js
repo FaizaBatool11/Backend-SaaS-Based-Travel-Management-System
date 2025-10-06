@@ -72,9 +72,8 @@ const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || "development";
 
 // Load config.json
-const configPath = path.join(__dirname, "../config/config.json");
-const configJson = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-const config = configJson[env];
+import configFile from "../config/config.js";
+const config = configFile[env];
 
 // Initialize Sequelize
 let sequelize;
