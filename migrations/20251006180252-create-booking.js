@@ -1,46 +1,8 @@
-// 'use strict';
-// /** @type {import('sequelize-cli').Migration} */
-// module.exports = {
-//   async up(queryInterface, Sequelize) {
-//     await queryInterface.createTable('Bookings', {
-//       id: {
-//         allowNull: false,
-//         autoIncrement: true,
-//         primaryKey: true,
-//         type: Sequelize.INTEGER
-//       },
-//       tripId: {
-//         type: Sequelize.INTEGER
-//       },
-//       passengerId: {
-//         type: Sequelize.INTEGER
-//       },
-//       status: {
-//         type: Sequelize.STRING
-//       },
-//       createdBy: {
-//         type: Sequelize.INTEGER
-//       },
-//       createdAt: {
-//         allowNull: false,
-//         type: Sequelize.DATE
-//       },
-//       updatedAt: {
-//         allowNull: false,
-//         type: Sequelize.DATE
-//       }
-//     });
-//   },
-//   async down(queryInterface, Sequelize) {
-//     await queryInterface.dropTable('Bookings');
-//   }
-// };
-
 'use strict';
 /** @type {import('sequelize-cli').Migration} */
 export default {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('bookings', { // table name lowercase
+    await queryInterface.createTable('Bookings', { // table name lowercase
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -51,7 +13,7 @@ export default {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'trips', // lowercase table name
+          model: 'Trips', // lowercase table name
           key: 'id'
         },
         onUpdate: 'CASCADE',
@@ -61,7 +23,7 @@ export default {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'passengers', // lowercase table name
+          model: 'Passengers', // lowercase table name
           key: 'id'
         },
         onUpdate: 'CASCADE',
@@ -71,7 +33,7 @@ export default {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'agencies', // lowercase table name
+          model: 'Agencies', // lowercase table name
           key: 'id'
         },
         onUpdate: 'CASCADE',
@@ -91,7 +53,7 @@ export default {
         type: Sequelize.INTEGER,
         allowNull: true,
         references: {
-          model: 'users', // lowercase table name
+          model: 'Users', // lowercase table name
           key: 'id'
         },
         onUpdate: 'CASCADE',
@@ -110,7 +72,6 @@ export default {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('bookings');
+    await queryInterface.dropTable('Bookings');
   }
 };
-

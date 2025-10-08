@@ -19,10 +19,23 @@ dotenv.config();
 
 const app = express();
 // app.use(cors());
-app.use(cors({
-  origin: "http://localhost:3000", // frontend URL
-  credentials: true
-}));
+// app.use(cors({
+//   // origin: "http://localhost:3000", // frontend URL
+//   origin: "https://saas-based-travel-management-system.vercel.app",
+//   credentials: true
+// }));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://saas-based-travel-management-system.vercel.app",
+      "https://saas-based-travel-management-git-7b3594-faizabatool11s-projects.vercel.app",
+      "https://saas-based-travel-management-system-mdk1inr4a.vercel.app"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 
