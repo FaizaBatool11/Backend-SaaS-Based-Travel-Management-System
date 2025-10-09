@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 export default {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Bookings', { // table name lowercase
+    await queryInterface.createTable('bookings', { // table name lowercase
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -72,6 +72,6 @@ export default {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Bookings');
+    await queryInterface.dropTable('bookings');
   }
 };
