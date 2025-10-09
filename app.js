@@ -32,7 +32,7 @@ app.use(
       "https://saas-based-travel-management-git-7b3594-faizabatool11s-projects.vercel.app",
       "https://saas-based-travel-management-system-mdk1inr4a.vercel.app"
     ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
   })
 );
